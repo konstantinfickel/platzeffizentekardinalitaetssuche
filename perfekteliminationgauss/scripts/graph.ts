@@ -7,7 +7,7 @@ import { resolve } from 'path';
 import { permutate } from 'lib/permutations';
 
 export const gauss = async ({
-    file = './matrix-example-with-diag.json',
+    file = './matrix.json',
     usePeo = true,
 }: {
         file: string,
@@ -23,30 +23,18 @@ export const gauss = async ({
 
     console.log(executionMatrix);
 
-    // console.log(matrixToTex(matrix));
-    // console.log(matrixToTex(executionMatrix));
-    // console.log(matrixToTex(peoToMatrix(ordering)));
-    // console.log(matrixToTex(unzip(peoToMatrix(ordering))));
-
-    // console.log(`\\sigma = \\left( ${ordering.join(', ')} \\right)`)
-
-    // console.dir(`matrix(${map(matrix, row => `[${row.join(',')}]`).join(',')})`)
-
     const gaussExecution = gaussSteps(executionMatrix);
 
     console.dir(map(gaussExecution, countNonZeros));
-
 };
 
 export const countPEOs = async ({
-    file = './matrix-example-with-diag.json',
+    file = './matrix.json',
 }: {
         file: string,
     }) => {
     const matrix = makeSymmetrical(await readJSON(file));
     const graph = buildGraph(matrix);
-
-    // console.dir(graph, { depth: 4 });
 
     checkIfPeo(range(0, graph.length), graph);
 
@@ -59,7 +47,7 @@ export const countPEOs = async ({
 const isNumericalZero = (element: number): boolean => Math.abs(element) < 0.001;
 
 export const createDat = async ({
-    file = './matrix-example-with-diag.json',
+    file = './matrix',
     usePeo = true,
     outputFolder = '../img/gausssteps/',
     outputName = 'optimized',
@@ -93,6 +81,6 @@ export const createDat = async ({
 
         const output = `${map(parsedMatrix, x => x.join('\t')).join('\n')}\n`
 
-        // await outputFile(resolve(outputFolder, `${outputName}_${stepNumber}.dat`), output);
+        await outputFile(resolve(outputFolder, `${outputName}_${stepNumber}.dat`), output);
     }));
 };
