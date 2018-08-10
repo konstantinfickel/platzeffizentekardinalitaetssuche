@@ -1,0 +1,126 @@
+\section{Anwendung beim Gauß-Algorithmus}
+Eine praktische Anwendung von chordalen Graphen und perfekten Eliminations-Rei\-hen\-fol\-gen ist eine Möglichkeit zum Beschleunigen des dem Leser bereits bekannten Gauß-Algorithmus\footnote{beispielsweise erklärt in \cite[Abschnitt 3.3]{stykel}} auf dünnbesetzten Matrizen.
+
+Eine \textit{dünnbesetzte} Matrix ist eine Matrix, die deutlich mehr \( 0 \)-Einträge als Einträge mit anderen Zahlen besitzt. Um sich Rechenoperationen bei der Ausführung des Gauß-Algorithmus zu sparen, ist es dabei von Interesse, diese \( 0 \)-Einträge zu erhalten, da diese Einträge bei den Zeilenadditionen  - falls man nur die Nicht-\( 0 \)-Einträge zusammen mit ihren Positionen speichert - ausgelassen werden können, und damit zusätzlich weniger Speicherplatz für die Matrix benötigt wird.
+
+Für das folgende Beispiel werden wir diese symmetrische \( 8 \times 8 \)-Matrix betrachten, deren Diagonale vollständig besetzt ist\footnote{\( A \) muss symmetrisch sein, damit der später daraus generierte Graph ungerichtet ist. Die Diagonalen müssen \( \neq 0 \), damit der Gauß-Algorithmus ohne Zeilenvertauschungen auskommt.}:
+
+\[
+	A =
+	\begin{bmatrix}
+		9 & 2 & 0 & 2 & 1 & 1 & 2 & 0 \\
+		2 & 8 & 2 & 0 & 1 & 0 & 0 & 0 \\
+		0 & 2 & 7 & 0 & 0 & 0 & 0 & 0 \\
+		2 & 0 & 0 & 8 & 0 & 1 & 3 & 0 \\
+		1 & 1 & 0 & 0 & 9 & 0 & 0 & 0 \\
+		1 & 0 & 0 & 1 & 0 & 7 & 2 & 0 \\
+		2 & 0 & 0 & 3 & 0 & 2 & 9 & 0 \\
+		0 & 0 & 0 & 0 & 0 & 0 & 0 & 8
+	\end{bmatrix}
+\]
+
+Die genauen Einträge von \( A \) sind hier so gewählt, dass bei der Ausführung des Gauß-Algorithmus keine \( 0 \) in einer Spalte entsteht, die nicht gerade eliminiert wird. Dies stellt sicher, dass immer ein Pivotelement ohne Vertauschung gefunden werden kann.
+
+Wenn wir darauf den Gauß-Algorithmus ausführen (Abbildung \ref{fig:gauss01}), werden im Laufe der Berechnung zusätzlich zu den bereits in der Originalmatrix vorhandenen Nicht-\( 0 \)-Einträgen \begin{tikzpicture}\fill[fill=black] circle(0.7ex);\end{tikzpicture} einige weitere entstehen \begin{tikzpicture}\fill[fill=red] circle(0.7ex);\end{tikzpicture}.
+
+\begin{figure}
+	\begin{tabular}{cccc}
+		\spymatrix{\matrixdefaulta} & \spymatrix{\matrixdefaultb} & \spymatrix{\matrixdefaultc} & \spymatrix{\matrixdefaultd} \\
+		\multicolumn{4}{c}{\vspace{0.1cm}}                                                                                    \\
+		\spymatrix{\matrixdefaulte} & \spymatrix{\matrixdefaultf} & \spymatrix{\matrixdefaultg} & \spymatrix{\matrixdefaulth}
+	\end{tabular}
+	\caption{Schritte des Gauß-Algorithmus (zeilenweise) auf der Matrix \( A \)}
+	\label{fig:gauss01}
+\end{figure}
+
+Dies kann jedoch mithilfe einer Vertauschung der Zeilen und Spalten der Matrix verhindert werden. Eine perfekte Eliminations-Reihenfolge ist eine solche Permutation, die uns zusätzliche Einträge erspart.
+
+Dafür erstellen wir zuerst den \textit{Eliminationsgraphen} \( G \), der für jede Zeile/Spalte \( i \) von \( A \in \mathbb{R}^{n \times n}\) einen Knoten \( v_i \), \( i \in \left\lbrace 0, \ldots, n - 1 \right\rbrace \) enthält. Eine Kante von \( v_i \) zu \( v_j \) mit \( i \neq j \) ist genau dann gegeben, wenn \( A_{i,j} \neq 0 \). \( G \) ist ungerichtet, da \( A \) symmetrisch ist. Der entstehende Graph ist der Beispielgraph aus Abbildung \ref{fig:chordalgraph}.\footnote{siehe Beschreibung aus \cite{algorithmic}}
+
+Wenn wir nun die perfekte Eliminations-Reihenfolge \( \left( 4, 6, 7, 1, 5, 3, 2, 8 \right) \) aus Abbildung \ref{fig:peo} verwenden, um die Zeilen und Spalten jeweils danach zu sortieren, erhalten wir folgende Matrix:
+
+\[ P^{\textnormal{T}} \cdot A \cdot P =
+	\left[
+		\begin{smallmatrix}
+			0&0&0&1&0&0&0&0\\
+			0&0&0&0&0&1&0&0\\
+			0&0&0&0&0&0&1&0\\
+			1&0&0&0&0&0&0&0\\
+			0&0&0&0&1&0&0&0\\
+			0&0&1&0&0&0&0&0\\
+			0&1&0&0&0&0&0&0\\
+			0&0&0&0&0&0&0&1
+		\end{smallmatrix}
+		\right] \cdot
+	\left[
+		\begin{smallmatrix}
+			9&2&0&2&1&1&2&0\\
+			2&8&2&0&1&0&0&0\\
+			0&2&7&0&0&0&0&0\\
+			2&0&0&8&0&1&3&0\\
+			1&1&0&0&9&0&0&0\\
+			1&0&0&1&0&7&2&0\\
+			2&0&0&3&0&2&9&0\\
+			0&0&0&0&0&0&0&8
+		\end{smallmatrix}
+		\right] \cdot
+	\left[
+		\begin{smallmatrix}
+			0&0&0&1&0&0&0&0\\
+			0&0&0&0&0&0&1&0\\
+			0&0&0&0&0&1&0&0\\
+			1&0&0&0&0&0&0&0\\
+			0&0&0&0&1&0&0&0\\
+			0&1&0&0&0&0&0&0\\
+			0&0&1&0&0&0&0&0\\
+			0&0&0&0&0&0&0&1
+		\end{smallmatrix}
+		\right]
+	=
+	\left[
+		\begin{smallmatrix}
+			8&3&1&2&0&0&0&0\\
+			3&9&2&2&0&0&0&0\\
+			1&2&7&1&0&0&0&0\\
+			2&2&1&9&1&2&0&0\\
+			0&0&0&1&9&1&0&0\\
+			0&0&0&2&1&8&2&0\\
+			0&0&0&0&0&2&7&0\\
+			0&0&0&0&0&0&0&8
+		\end{smallmatrix}
+		\right]
+	= A^{\ast}
+\]
+
+Der Gauß-Algorithmus auf \( A ^ {\ast} \) erzeugt keine zusätzlichen Nicht-\( 0 \)-Einträge -- wie auch in Abbildung \ref{fig:gauss02} zu erkennen ist.
+
+\begin{figure}
+	\begin{tabular}{cccc}
+		\spymatrix{\matrixpeoa} & \spymatrix{\matrixpeob} & \spymatrix{\matrixpeoc} & \spymatrix{\matrixpeod} \\
+		\multicolumn{4}{c}{\vspace{0.1cm}}                                                                    \\
+		\spymatrix{\matrixpeoe} & \spymatrix{\matrixpeof} & \spymatrix{\matrixpeog} & \spymatrix{\matrixpeoh}
+	\end{tabular}
+	\caption{Schritte des Gauß-Algorithmus (zeilenweise) auf der permutierten Matrix \( A^{\ast} \)}
+	\label{fig:gauss02}
+\end{figure}
+
+Ein Beweis dafür, dass dies kein glücklicher Zufall ist, lässt sich wie folgt skizzieren:
+
+\begin{proof}
+	Um sicherzustellen, dass immer das Element \( A_{1, 1} \neq 0 \) ist und somit als Pivotelement gewählt werden kann, wird davon ausgegangen, dass nie ein Element außerhalb der Spalte, die eliminiert werden soll, zufällig \( 0 \) wird.
+
+	\begin{itemize}
+		\item[Induktionsvoraussetzung:]
+		      Sei \( A \) eine \( t \times t \)-Matrix, bei der die Nulleinträge symmetrisch sind, also für \( i, j \in \left\lbrace 1, \ldots, t \right\rbrace \) gilt die Aussage \( A_{i,j} = 0 \Leftrightarrow A_{j,i} = 0 \). Außerdem sei in \( A \) die Diagonale vollständig besetzt und die Zeilen nach einer perfekten Eliminations-Reihenfolge sortiert. Dann lässt sich der Gauß-Algorithmus auf \( A \) durchführen, ohne dabei zusätzliche Nicht-\( 0 \)-Einträge zu erhalten.
+		\item[\( t = 1 \)]
+		      Da bei einer \( 1 \times 1 \)-Matrix kein Eliminationsschritt durchgeführt werden muss, entstehen hier auch keine neuen Einträge, die nicht Null sind.
+		\item[\( t \Rightarrow t + 1\)]
+		      Sei \( J = \left\lbrace j \in \left\lbrace 2, \ldots, t \right\rbrace \mid A_{j, 1} \neq  0 \right\rbrace \) die Menge der Indices der Zeilen von \( A \), bei denen der Eintrag in der ersten Spalte eliminiert werden muss -- und somit die erste Zeile auf diese addiert werden soll.
+
+		      Durch die Einträge der ersten Spalte von \( A \) sind in dem zugehörigen Eliminationsgraphen die Knoten, die zu den Zeilen von \( J \) gehören, mit dem Knoten der zur ersten Zeile gehört verbunden. Da die Zeilen von \( A \) nach einer perfekten Eliminations-Reihenfolge sortiert worden sind und diese mit dem simplizialen Knoten an erster Stelle in \( \sigma \) verbunden sind, sind alle Knoten, die zu den Zeilen mit Index \( J \) gehören, auch untereinander verbunden.
+
+		      Dies bedeutet, dass für \( i, j \in J \) der Eintrag \( A_{i,j} \) nicht \( 0 \) sein kann. (Im Falle von \( i = j \) folgt dies aus der voll besetzten Diagonalen.) Da die erste Zeile wegen der Symmetrie von \( A \) neben dem ersten Eintrag nur in Elementen mit einem Index aus \( J \) Nicht-\( 0 \)-Einträge besitzt, werden diese bei der Elimination (also der skalierten Addition auf die Zeilen mit Index in \( J \)) nie auf \( 0 \)-Einträge der entsprechenden Zeile addiert, womit kein zusätzlicher Nicht-\( 0 \)-Eintrag entstehen kann.
+
+		      Sei \(A'\) die Matrix nach dem Eliminationschritt. Die Teilmatrix \( A'_{\left\lbrace 2, \ldots, t\right\rbrace, \left\lbrace 2, \ldots, t\right\rbrace} \), die man erhält, wenn man von \( A' \) die erste Zeile und Spalte entfernt, erfüllt wieder die Eigenschaften der Induktionsvoraussetzung, wodurch auch in späteren Schritten keine zusätzlichen Nicht-\( 0 \)-Einträge hinzukommen.
+	\end{itemize}
+\end{proof}

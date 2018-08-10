@@ -1,0 +1,93 @@
+\section{Zeit- / Platz-Tradeoffs für die Kardinalitätssuche}
+Der in Abschnitt \ref{section:mcs} vorgestellte Algorithmus besitzt zwar eine lineare Laufzeit, verwendet aber mit \(\mathcal{O}\left( n \cdot \textnormal{lg} \left( n \right) \right) \) bits relativ viel Speicher. Dies kann vor allem dann störend werden, wenn Zeit keine Priorität ist und große Datenmengen mit einem kleinen beschreibbaren Arbeitsspeicher verarbeitet werden sollen (beispielsweise auf eingebetteten Systemen). Deshalb werden in \cite{sankardeep} platzeffizientere Varianten der Kardinalitätssuche vorgestellt, die dafür eine längere Laufzeit besitzen:
+
+Im Folgenden wird nun das Rechnermodell formal definiert, das auch schon implizit in Abschnitt \ref{section:mcs} verwendet wurde:
+
+\paragraph{Rechnermodell und Datenformat} Zur Ausführung und Analyse der Algorithmen in dieser Arbeit wird das \textit{Random Access Machine}-Modell verwendet, wobei für die Ausführung ein beliebig les- und beschreibbarer Speicher mit einer bestimmten Grö\-ßen\-ord\-nung zur Verfügung steht. Die für Adressierung eines Knotens benötigte Wortgröße liegt dabei in \( \mathcal{O} \left( \textnormal{lg} \left( n \right)\right) \) Bits.
+
+Der Eingabegraph \( G \) mit seinen \( n \) Knoten und \( m \) Kanten ist in einem nur lesbaren separaten Speicher zu finden. Die Kanten sind als Adjazenzlisten \(\textnormal{Adj} \left( x \right) \)  verfügbar, womit ein beliebiger Nachbar eines Knotens \( x \in V \) in \( \mathcal{O} \left( 1 \right) \) Zeit ausgewählt werden kann.
+
+Für die Ausgabe wird ein separater Speicher verwendet, aus dem bereits geschriebene Ausgaben weder gelesen noch verändert werden können.\footnote{Rechnermodell von \cite{sankardeep}, genauer spezifiziert in \cite{asano}} In dieser Arbeit wird der Ausgabespeicher beginnend mit dem letzten Element von \( \sigma \) beschrieben. Bei einem nur sequentiell beschreibbaren Ausgabespeicher würden damit bei der Verwendung dieser Algorithmen eine umgekehrte perfekte Eliminations-Reihenfolge berechnet werden können und damit zusätzliche Zeit und Kosten für das Umkehren der Reihenfolge anfallen.
+
+\begin{algorithm}
+	\SetAlgoVlined
+	\KwData{Graph \( G = \left( V, E \right) \)}
+	\For{\( v \in V  \)}{
+		\( \texttt{B}\left[ v \right] \longleftarrow \textnormal{\texttt{false}} \)\;
+	}
+	\For{\( i \in \left\lbrace n, \ldots, 1 \right\rbrace \)}{
+		\(u \longleftarrow \textnormal{wähle beliebigen Knoten } x \in V \)\;
+		\(c \longleftarrow 0 \)\;
+		\For{\( v \in V \) mit \(\textnormal{\texttt{B}} \left[ v \right] = \textnormal{\texttt{false}}\)}{
+			\( k \longleftarrow 0 \)\;
+			\For{\( w \in  \textnormal{Adj} \left( v \right)\) mit \(\textnormal{\texttt{B}}\left[ w \right] = \textnormal{\texttt{true}}\)}{
+				\( k \longleftarrow k + 1 \)\;
+			}
+			\If{\( k \geq c \)}{
+				\(u \longleftarrow v\)\;
+				\(c \longleftarrow k\)\;
+			}
+		}
+		\(\textnormal{\texttt{B}} \left[ u \right] = \textnormal{\texttt{true}}\)\;
+		\(\sigma \left[ i \right] \longleftarrow u\)\;
+	}
+	\KwResult{Reihenfolge \( \sigma: V \mapsto \left\lbrace 1, \ldots, n \right\rbrace \) der Knoten in \( V \)}
+	\caption{Kardinalitätssuche mit \( n + \mathcal{O} \left( \textnormal{lg} \left( n \right) \right) \text{bits} \) Speicher nach \cite[3.1]{sankardeep}}
+	\label{algorithm:mcsb}
+\end{algorithm}
+
+\paragraph{\( n + \mathcal{O} \left( \textnormal{lg} \left( n \right) \right) \text{bits} \)}
+Bei dieser sehr speicher-fokussierten Realisierung der Kar\-di\-na\-li\-täts\-suche verwenden wir nur ein Bit-Array \( \texttt{B} : V \mapsto \left\lbrace \texttt{true}, \texttt{false} \right\rbrace \) und Zählvariablen zum Iterieren der Knoten. Somit werden \( n \text{ bits} \) für die Knoten und jeweils \( \textnormal{lg} \left( n \right) \) bits für die Zählvariablen benötigt, also insgesamt \( n + \mathcal{O} \left( \textnormal{lg} \left( n \right) \right) \text{bits}\).
+
+Zu Beginn wird der gesamte Array \( \texttt{B} \) mit \( \texttt{false} \) (für nicht markiert) initialisiert.
+
+Anschließend wird \( \sigma \) mit dem letzten Element beginnend schrittweise berechnet:
+In jedem Durchlauf \( i \in \left\lbrace n, \ldots, 1 \right\rbrace \) wird für jedes \( v \in V \) geprüft, ob es noch nicht nummeriert wurde, also ob \( \texttt{B}\left[ v \right] = \texttt{false} \). Falls ja, wird die Adjazenzliste \( \textnormal{Adj}\left( v \right) \) durchlaufen und die Anzahl der Elemente darin gezählt, die bereits nummeriert sind (also
+\( \texttt{B} = \texttt{true} \)). Dabei wird der Knoten \( u \) mit der in dem jeweiligen Schritt größten Anzahl an nummerierten Nachbarn bestimmt und anschließend so in die Position von \( \sigma \left( i \right) \) des Ausgabespeichers geschrieben -- womit er am Anfang der bereits berechneten Einträge steht. In Algorithmus \ref{algorithm:mcsb} ist dieses Vorgehen als Pseudo-Code zusammengefasst.
+
+Da für jeden der \( n \) Knoten in jedem Schritt einmal alle Adjazenzlisten durchlaufen werden (was \(O\left( m\right)\) Zeit benötigt), hat diese Variante eine Laufzeit von \( \mathcal{O} \left( n \cdot m \right) \).\footnote{siehe \cite[Abschnitt 3.1]{sankardeep}}
+
+\paragraph{\( \mathcal{O} \left( n \right) \text{ bits} \)} Die folgende Version der Kardinalitätssuche verwendet deutlich mehr Speicher (\( \mathcal{O} \left( n \right) \) statt \( n \) bits):
+
+Neben dem Bit-Vektor \( \texttt{B} \)  werden hier weitere Datenstrukturen zum Speichern der Knoten verwendet: In der doppelt verketteten Liste \( \texttt{L} \) besteht jedes Element aus einer Zahl \( \texttt{labeledNeighbors} \) für die Anzahl der nummerierten Nachbarn und einer weiteren verketteten Liste von Knoten, deren Einträge jeweils \( \texttt{labeledNeighbors} \) nummerierte Nachbarn besitzen. Um Platz zu sparen, werden immer nur \( s \in \Theta \left( \frac{n}{\textnormal{lg}\left( n \right)}\right) \) Elemente in \( \texttt{S} \) und \( \texttt{T} \) gehalten. Die äußere Liste ist nach \( \texttt{labeledNeighbors} \) sortiert; auf das jeweils erste und letzte Element kann in \( \mathcal{O} \left( 1 \right) \) zugegriffen werden. Um auf einen Knoten innerhalb der geschachtelten Liste innerhalb von \( \mathcal{O} \left( \textnormal{lg} \left( n  \right) \right) \) zugreifen zu können, wird außerdem ein Suchbaum \( \texttt{T} \)  angelegt, in dem alle Knoten zu finden sein sollen, die auch in \( \texttt{L} \) sind. Bei den Knoten in \( \texttt{L} \) und \( \texttt{T} \) sind Zeiger auf diese in der jeweils anderen Struktur eingetragen.
+
+Da jeder Knoten mit \( \mathcal{O} (\textnormal{lg}\left( n \right)) \) bits in den Datenstrukturen \( \texttt{L} \) und \( \texttt{T} \) gespeichert werden kann und maximal \( \Theta \left(\frac{n}{\textnormal{lg}\left( n \right)} \right) \) Knoten auf einmal geladen sind, wird für beide Strukturen \( \mathcal{O} \left( n \right) \) Bits Speicher benötigt. \( \texttt{B} \) hat mit \( n \) Bits einen geringeren Speicherbedarf - womit hier insgesamt \( \mathcal{O} \left( n \right) \) bits ausreichen.
+
+Bei der Ausführung des Algorithmus' werden zuerst \( s \) Knoten in \( \texttt{L} \) und \( \texttt{T} \) geladen, bei \( \texttt{L} \) kommen dabei alle Knoten in die Liste mit \( \texttt{labeledNeighbors} = 0 \). \( \texttt{B} \) wird wieder komplett mit \( \texttt{false} \) initialisiert.
+
+Im \( i \)-ten Schritt wird zuerst ein Knoten \( v \) aus \( \texttt{L} \) aus der Unterliste mit dem größten \( \texttt{labeledNeighbors} \) genommen. Dieser wird dann in \( \sigma \) in die Position \( \sigma \left( n - i + 1\right) \) angefügt, in \( \texttt{B} \) als nummeriert markiert und anschließend aus \( \texttt{L} \) und \( \texttt{T} \) entfernt. Falls dadurch die entsprechende Liste, aus der der Knoten entfernt wurde, leer wird, wird das entsprechende Element aus \( \texttt{L} \) gelöscht.
+
+Für jeden Nachbarn von \( w \in \textnormal{Adj} \left( v \right) \) wird anschließend zuerst geprüft, ob sich dieser bereits in \( \texttt{T} \) (und somit auch \( \texttt{L} \)) befindet.
+Falls ja, wird dieser in das (eventuell neu erstellte) Listenelement von \( \texttt{L} \) mit einem um eins höheren \texttt{labeled\-Neighbors} eingefügt und aus seiner alten Unterliste entfernt. Zusätzlich wird die Referenz in \( \texttt{T} \) aktualisiert.
+Falls dieser noch nicht in \( \texttt{T} \) vorhanden ist, wird zuerst mithilfe von \( \texttt{B} \) die Anzahl der nummerierten Nachbarn bestimmt und in einer Variable \( k \) gespeichert. Falls diese Zahl größer ist als das kleinste \( \texttt{labeledNeighbors} \) in \(\texttt{L}\), wird der Knoten in die entsprechende (eventuell neu erstellte) Unterliste mit \texttt{labeled\-Neighbors} \( = k\) von \( \texttt{L} \) eingefügt, und - falls sonst die Maximalanzahl von \( s \) Knoten überschritten werden würden - der erste Knoten aus der Liste mit dem kleinsten \( \texttt{labeledNeighbors} \) in \( \texttt{L} \) (und \( \texttt{T}\)) entfernt.
+
+Wenn während der Ausführung die in \( \texttt{L} \) und \( \texttt{T} \) zwischengespeicherten Knoten ausgehen, werden wieder \( s \) neue, nicht-nummerierte Knoten nachgeladen (soweit vorhanden). Das Einfügen der ersten \( s \) Knoten erfolgt für jeden der Knoten \( v \), indem die  Nachbarn \( w \in \textnormal{Adj} \left( v \right) \) mit \( \texttt{B}\left[w\right] = \texttt{true} \) gezählt werden (diese Anzahl sei \( k \)) und anschließend \( v \) in die (eventuell neu erstellte Liste) mit \( \texttt{labeledNeighbors} = k \) eingefügt wird. Bei den restlichen Knoten wird genauso die Anzahl \( k \) der benachbarten, nummerierten Knoten berechnet, und falls diese größer ist als das kleinste vorhandene \( \texttt{labeledNeighbors} \) bei einem Element von \( \texttt{L} \), wird ein Knoten aus der Liste mit dem kleinsten \( \texttt{labeledNeighbors} \) durch diesen wie bereits beschrieben ersetzt.
+
+Bestimmen wir im Folgenden die Laufzeit dieser Variante der Kardinalitätssuche:
+
+Bei einem Nachfüllen von \( \texttt{L} \) wird das Hinzufügen von einem Knoten durch die Zeit zum Durchlaufen der Nachbarn dominiert - und lässt sich somit mit \( \mathcal{O} \left( m \right) \) abschätzen. Da das Nachfüllen der Liste höchstens \( \textnormal{lg} \left( n \right) \) mal passiert, hat dies insgesamt eine Laufzeit von \( \mathcal{O} \left( m \cdot \textnormal{lg} \left( n \right) \right) \).
+
+Das darauf folgende Einfügen der \( s \in \Theta \left( \frac{\textnormal{lg} \left( n \right) }{n} \right) \) Knoten in den balancierten Baum \( \texttt{T} \) kostet jeweils \( \mathcal{O} \left( \textnormal{lg} \left( n \right) \right) \) Zeit, somit werden dafür insgesamt \( \mathcal{O} \left( n \right) \) Rechenschritte benötigt.
+
+Da bei jedem Verschieben von Knoten zwischen Listen ein solcher zuerst mit \( \mathcal{O} \left( \textnormal{lg} \left( n \right) \right)\) Aufwand in \( \texttt{T} \) gesucht werden muss, ist die Laufzeit für das Verschieben von Knoten \( \mathcal{O} \left( \textnormal{lg} \left( n \right) \right)\). Ein Knoten muss maximal \( \left| \textnormal{Adj}\left( v \right) \right| \) mal verschoben werden (jedes Mal, wenn ein Nachbar nummeriert wird) - dies passiert maximal \( \mathcal{O} \left( \sum_{w \in V} \left| \textnormal{Adj}\left( w \right) \right| \right)  = \mathcal{O} \left( m \right)\) mal. Damit betragen die Laufzeitkosten dafür insgesamt \( \mathcal{O} \left( m \cdot \textnormal{lg} \left( n \right) \right) \).
+
+Beim Berechnen der Anzahl der nummerierten Nachbarn eines Knoten \( v \) muss jeweils die Adjazenzliste durchlaufen werden (\(\mathcal{O} \left( \left| \textnormal{Adj}\left( v \right) \right| \right) \) Zeit) - und da dies bei der Nummerierung jedes Nachbarn passieren kann, ergibt sich dafür insgesamt eine Laufzeit von \( \mathcal{O} \left( \sum_{w \in V} \left| \textnormal{Adj}\left( w\right) \right|^2 \right) \) Rechenschritten.
+
+Die Autoren von \cite{sankardeep} haben dies mit \( \mathcal{O} \left( \sum_{w \in V} \left| \textnormal{Adj}\left( w\right) \right|^2 \right)  = \mathcal{O} \left( \frac{m^2}{n}\right)\) abgeschätzt. Dass diese Abschätzung nicht funktioniert, kann man an folgendem Beispiel erkennen:
+
+Sei \( G = \left( V, E \right) \) ein sternförmiger Graph, also mit \( V = \left\lbrace v_1, \ldots, v_n \right\rbrace \) und \[ E = \left\lbrace \left\lbrace v_1, v_2 \right\rbrace, \ldots, \left\lbrace v_1, v_n \right\rbrace \right\rbrace. \] Dann ergibt sich für die linke Seite \( \sum\limits_{v \in V} {\left| \textnormal{Adj}\left( v\right) \right}^2 = 1 \cdot \left( n -1 \right)^2 + \left( n - 1 \right) \cdot 1^2 \in \mathcal{O} \left( n^2 \right) \) und für die rechte Seite \( \frac{\left( n - 1 \right)^2}{n} \in \mathcal{O} \left( n \right) \), womit eine Gleichheit der Mengen nicht gegeben sein kann.
+
+Eine gültige Abschätzung wäre \[ \mathcal{O} \left( \sum_{w \in V} \left| \textnormal{Adj}\left( w\right) \right|^2 \right) \subseteq \mathcal{O} \left( \sum_{v \in V} \sum_{w \in V} \left| \textnormal{Adj}\left( v\right) \right| \cdot \left| \textnormal{Adj}\left( w\right) \right| \right) = \mathcal{O} \left( m^2 \right), \] die im Falle des beschriebenen sternförmigen Graphen eine Gleichheit wäre.
+
+Die daraus resultierende Gesamtlaufzeit von \( \mathcal{O} \left( m^2 + m \cdot \textnormal{lg} \left( n \right)\right) \) (statt \( \mathcal{O} \left( \frac{m^2}{n} + m \cdot \textnormal{lg} \left( n \right)\right) \))\footnote{siehe \cite[Abschnitt 3.2]{sankardeep}} besitzt jedoch schon bei Graphen mit \( m \in \mathcal{O} \left( n \right) \) mit dieser Abschätzung eine schlechtere Laufzeit als die platzsparendere erste Version.
+
+Zusammengefasst ergeben sich durch die beschriebenen Algorithmen folgende Zeit- / Speicherplatz-Tradeoffs:
+
+\begin{theorem}
+	Es ist möglich, für einen Graphen \( G = \left( V, E \right) \) mit \( n = \left| V \right| \) Knoten und  \( m = \left| E \right| \) Kanten eine perfekte Eliminations-Reihenfolge \( \sigma \) zu erhalten in\footnote{siehe \cite[Satz 1]{sankardeep} (Option c wurde hier ersetzt durch den Stan\-dard-Al\-go\-rith\-mus)}
+	\begin{enumerate}[a)]
+		\item \( \mathcal{O} \left( n \cdot m \right) \) Zeit mit \( n + \mathcal{O} \left( \textnormal{lg} \left( n\right) \right) \) bits
+		\item \( \mathcal{O} \left( m ^ 2 + m \cdot \textnormal{lg} \left( n\right) \right) \) Zeit mit \( \mathcal{O} \left( n \right) \) bits
+		\item \( \mathcal{O} \left( n + m \right) \) Zeit mit \( \mathcal{O} \left( n \cdot \textnormal{lg} \left( n \right) \right) \) bits
+	\end{enumerate}
+\end{theorem}

@@ -1,0 +1,119 @@
+\section{Kardinalitätssuche}
+\label{section:mcs}
+Nachdem wir im vorherigen Kapitel gezeigt haben, dass \( G \) genau dann chordal ist, wenn eine perfekte Eliminations-Reihenfolge \( \sigma \) für \( G \) existiert, werden wir uns in diesem Abschnitt damit beschäftigen, wie sich eine solche perfekte Eliminations-Reihenfolge algorithmisch bestimmen lässt. Dazu werden wir die sogenannte Kardinalitätssuche verwenden, die in der englischen Literatur \textit{Maximum Cardinality Search (kurz MCS)} genannt wird.
+
+Diese wird \glqq{}von hinten\grqq{} gebildet, indem in jedem Schritt \( \sigma \left( i \right) \) mit \( i \in \left\lbrace \left| V \right|, \ldots, 1 \right\rbrace \) jeweils der nicht-nummerierte (also in \( \sigma \) noch nicht zugeordnete) Knoten ist, der am meisten Nachbarn besitzt, die bereits nummeriert worden sind.\footnote{siehe \cite[Kapitel 4.3]{golumbic} und \cite[2.1]{sankardeep}}
+
+Die perfekte Eliminations-Reihenfolge aus Abbildung \ref{fig:peo} hätte dabei durch die Kardinalitätssuche generiert werden können. Diese ist jedoch nicht eindeutig, da in vielen Schritten mehrere Knoten mit größter Zahl an nummerierten Nachbarn verfügbar sind.
+
+\paragraph{Standard-Implementierung} Eine einfache Implementierung basiert darauf, die Knoten nach der Anzahl der benachbarten, nummerierten Knoten in Mengen sortiert zu halten:
+
+Als Datenstruktur wird ein Array \( \texttt{S} \) von \( n = \left| V \right| \) Mengen verwendet, in dem alle nicht-num\-mer\-ier\-ten Knoten gespeichert sind. Dabei sind jeweils in \( \texttt{S} \left[ i \right] \) die Knoten mit \( i \) nummerierten Nachbarn zu finden (\( i \in \left\lbrace 0, \ldots, n - 1 \right\rbrace \)). Um in konstanter Zeit auf Knoten in \( \texttt{S} \) zugreifen zu können und den Index der Menge zu finden, benötigen wir zusätzlich dazu noch zwei Listen von Zahlen: Während in \( \texttt{M} \) für jeden Knoten \( v \in V \) die Position in \( \texttt{S} \) gespeichert wird, sind es in \( \texttt{N} \) jeweils die Anzahl der nummerierten Nachbarn und somit auch der Index der Menge in \( \texttt{S} \).\footnote{siehe \cite[Abschnitt 2, Algorithmus Maximum Cardinality Search]{tarjanyannakakis}, nur, dass in \( \texttt{M} \) nun die genaue Position in \( \texttt{S} \) gespeichert wird, vergleichbar mit \cite[Abschnitt 2]{sankardeep}}
+
+Da in \( \texttt{M} \) und \( \texttt{N} \) für alle \( n \) Knoten die in \( \mathcal{O} \left( \textnormal{lg} \left( n \right) \right)\) bits darstellbare Position in \( \texttt{S} \) gespeichert ist, genügen hier jeweils \( \mathcal{O} \left( n \cdot \textnormal{lg} \left( n \right) \right) \) Speicher. \( \texttt{S} \) lässt sich dabei durch einen Array von \( n \) doppelt-verketteten Listen darstellen, deren einzelne Einträge sich mit jeweils \( \mathcal{O} \left( \textnormal{lg} \left( n \right) \right) \) bits speichern lassen, womit insgesamt hier ebenfalls \( \mathcal{O} \left( n \cdot \textnormal{lg} \left( n \right) \right) \) bits ausreichen.\footnote{siehe \cite{sankardeep}}
+
+Zu Beginn der Ausführung werden alle Knoten von \( G \) in \( \texttt{S} \left[ 0 \right] \) eingetragen und in \( \texttt{M} \) und \( \texttt{N} \) entsprechend gegenreferenziert. In jedem Schritt \( i \in \left\lbrace n, \ldots, 1 \right\rbrace \) wird dann das Element \( \sigma \left( i \right) \) bestimmt: Dieses ist ein beliebiger Knoten \( v \in \texttt{S} \left[ j \right]\), wobei \( j \) der größte Index einer Menge in \( \texttt{S} \) ist, für den \( \texttt{S} \left[ j \right] \neq \emptyset \). Anschließend wird jeder nicht-nummerierte Nachbarknoten \( w \) von \( v \) aus der Menge \( \texttt{S} \left[ \texttt{N} \left[ w \right] \right] \) entfernt und in \( \texttt{S} \left[ \texttt{N} \left[ w \right] + 1 \right] \) eingefügt und dann auch jeweils die Gegenreferenzen in \( \texttt{N} \) und \( \texttt{M} \) aktualisiert.
+
+\begin{algorithm}
+	\SetAlgoVlined
+	\KwData{Graph \( G = \left( V, E \right) \)}
+	\For{\( i \in \left\lbrace 0, \ldots, n-1 \right\rbrace  \)}{
+		\( \texttt{S}\left[ i \right] \longleftarrow \emptyset \)
+	}
+	\For{\( v \in V \)}{
+		füge \( v \) in \( \texttt{S} \left[ 0 \right]\) ein\;
+		\( \texttt{M} \left[ v \right] \longleftarrow \) Position von \( v \) in \( \texttt{S}\left[ 0 \right] \)\;
+		\( \texttt{N} \left[ v \right] \longleftarrow 0 \)\;
+	}
+	\( j \longleftarrow 0 \)\;
+	\For{\( i \in \left\lbrace n, \ldots, 1 \right\rbrace \)}{
+		\( v \longleftarrow\) entferne einen Knoten aus \(  \texttt{S}\left[ j \right] \)\;
+		\( \sigma\left[ i \right] \longleftarrow v\)\;
+		\( j \longleftarrow j + 1\)\;
+                \( \textnormal{\texttt{N}}\left[ v \right] \longleftarrow -1\)\;
+		\For{\( w \in \textnormal{Adj}\left( v \right)\) mit \( \textnormal{\texttt{N}}\left[ w \right] \geq 0 \) }{
+			\( k \longleftarrow N \left[ w \right] \)\;
+			lösche \( w \) aus \( \texttt{S} \) an Position \(\texttt{M}\left[ w \right]\) aus der Menge \( \texttt{S}\left[ k \right] \)\;
+			füge \( w \) in \( \texttt{S}\left[ k + 1 \right] \) ein\;
+			\( \texttt{N} \left[ w \right] \longleftarrow k + 1 \)\;
+			\( \texttt{M}\left[ w \right] \longleftarrow \) neue Postion von \( v \) in \( \texttt{S}\left[ k \right] \)\;
+		}
+		\While{\(j \geq 0 \land \textnormal{\texttt{S}}\left[ j \right] = \emptyset \)}{
+			\( j \longleftarrow j - 1 \)\;
+		}
+	}
+	\KwResult{Reihenfolge \( \sigma: \left\lbrace 1, \ldots, n \right\rbrace \mapsto  V \) der Knoten in \( V \)}
+	\caption{Kardinalitätssuche nach \cite[2.1]{sankardeep}}
+	\label{algorithm:defaultmcs}
+\end{algorithm}
+
+Eine Implementierung in Pseudo-Code ist in Algorithmus \ref{algorithm:defaultmcs} zu finden. Dabei ist vor allem die Verwaltung des Index der größten Menge \( j \) interessant. Am Anfang wird dieser auf \( 0 \) gesetzt, da sich alle Elemente in \( \texttt{S} \left[ 0 \right] \) befinden. Da der Index der Menge in \( \texttt{S} \) eines Knotens in jedem Schritt um maximal \( 1 \) erhöht werden kann, wird  \( j \) um \( 1 \) inkrementiert, um sicherzustellen, dass \( j \geq \textsf{max} \left\lbrace j \in \left\lbrace 1, \ldots, n \right\rbrace | \texttt{S} \neq \emptyset \right\rbrace \). Mithilfe der \textbf{while}-Schleife wird diese Ungleichung dann wieder zur Gleichung.
+
+Bei der Ausführung werden dann zuerst alle Knoten in \( \texttt{S} \left[ 0 \right] \) eingefügt und entsprechend in \( \texttt{M} \) gegenreferenziert, was \( \mathcal{O} \left( n \right) \) Zeit benötigt. Anschließend werden für jeden der \( n \) Knoten jeweils die Adjazenzliste durchlaufen; dies kann in \(\mathcal{O}\left( \sum_{v \in V} \left(1 + \left| \textnormal{Adj} \left( v \right) \right| \right) \right) = \mathcal{O} \left( n + m \right) \) erreicht werden. Da \( j \) in jedem der \( n \) Durchläufe um jeweils \( 1 \) inkrementiert wird, und nie \( j < -1 \) gelten kann, wir der Rumpf der \textbf{while}-Schleife höchstens \( n + 1\) mal durchlaufen, sodass alle Operationen auf \( j \) höchstens \( \mathcal{O} \left( n \right) \) Zeit benötigen. Damit ist die gesamte Laufzeit des Algorithmus' \( \mathcal{O} \left( n + m \right) \).
+
+Um nun zu beweisen, dass die Kardinalitätssuche wirklich -- falls dies möglich ist, also \( G \) chordal ist -- eine perfekte Eliminations-Reihenfolge bestimmt, beweisen wir zunächst, dass jede von der Kardinalitätssuche generierte Reihenfolge folgende Eigenschaft besitzt:
+
+\begin{definition}[Reihenfolgeneigenschaft \( P \)]
+	Sei \( \sigma \) eine Reihenfolge der Knoten des Graphen \( G = \left( V, E \right) \).
+
+	\( \sigma\) besitzt die Eigenschaft \( P \), falls für alle Knoten \( a, b, c \in V \) mit \( \sigma^{-1} \left( a \right) < \sigma^{-1} \left( b \right) < \sigma^{-1} \left( c \right)\) und \( c \in \textnormal{Adj} \left( a \right) \setminus \textnormal{Adj} \left( b \right) \) ein weiterer Knoten \( x \in \textnormal{Adj} \left( b \right) \setminus \textnormal{Adj} \left( a \right) \) mit \( \sigma^{-1} \left( b \right) < \sigma^{-1} \left( x \right) \) existiert.\footnote{siehe \cite[Lemma 4]{tarjanyannakakis}}
+\end{definition}
+
+\begin{theorem}
+	Jede von der Kardinalitätssuche generierte Reihenfolge \( \sigma \) besitzt die Eigenschaft \( P \).\footnote{siehe \cite[Satz 2]{tarjanyannakakis}}
+	\label{theorem:mcserfuelltp}
+\end{theorem}
+
+\begin{proof}
+	Sei \( \sigma \) eine Reihenfolge der Knoten des Graphen \( G = \left( V, E \right) \), die durch die Kardinalitätssuche berechnet wurde.
+
+	Seien \( a, b, c \in V \) mit den Eigenschaften \( \sigma^{-1}\left( a \right) < \sigma^{-1}\left( b \right) < \sigma^{-1}\left( c \right) \),  \( \left\lbrace a, c \right\rbrace \in E \) und \( \left\lbrace c, b \right\rbrace \not\in E \).
+
+	In dem Moment, in dem bei der Ausführung der Kardinalitätssuche \( b \) nummeriert wird, muss \( b \) zu mindestens genauso vielen bereits nummerierten Knoten benachbart sein wie \( a \).  Folglich, da \( a \) (aber nicht \( b \)) mit \( c \) verbunden ist, ist \( b \) benachbart zu einem anderen zuvor nummerierten Knoten \( x\), der nicht mit \( a \) verbunden ist. Da dies für beliebige \( a \), \( b \) und \( c \) gilt, besitzt die gesamte Sortierung \( \sigma\) die Eigenschaft \( P \).
+\end{proof}
+
+Um bewiesen zu haben, dass mit der Kardinalitätssuche wirklich eine perfekte Eliminations-Rei\-hen\-fol\-ge berechnet wird, fehlt somit noch folgende Aussage:
+
+\begin{theorem}
+	Sei \( G \) ein chordaler Graph.\\
+	Falls die Reihenfolge \( \sigma \) von den Knoten von \( G \) die Eigenschaft \( P \) erfüllt, so ist \( \sigma \) eine perfekte Eliminations-Reihenfolge.\footnote{siehe \cite[Lemma 4]{tarjanyannakakis} mit für perfekte Eliminationsreihenfolgen abgewandeltem Beweisende}
+	\label{theorem:auspfolgtchordal}
+\end{theorem}
+
+\begin{proof}
+	Sei \( \sigma \) eine Reihenfolge der Knoten des chordalen Graphen \( G = \left( V, E \right) \), die die Eigenschaft \( P \) aufweist.
+
+	Ein Weg \( \pi = \left( v_0, \ldots, v_k \right) \) in \( G \) mit \( k \geq 2 \) besitzt die Eigenschaft \( Q \) genau dann, wenn folgende Aussagen erfüllt sind:
+
+	\begin{itemize}
+		\item \( \pi \) besitzt keine Zwischenverbindungen (für beliebige \( i, j \in \left\lbrace 1, \ldots k \right\rbrace, \left| i - j \right| \neq 1 \) gelte \( \left\lbrace v_i, v_j\right\rbrace \not\in E \)).
+		\item Für ein \( i \in \left\lbrace 1, 2, \ldots, k - 1 \right\rbrace \) sei \( \sigma^{-1} \left( v_0 \right) > \sigma^{-1} \left( v_k \right) > \sigma^{-1} \left( v_1 \right)  >  \sigma^{-1} \left( v_2 \right) > \ldots > \sigma^{-1} \left( v_i \right) \) und \( \sigma^{-1} \left( v_i \right) < \sigma^{-1} \left( v_{i + 1} \right) < \ldots < \sigma^{-1} \left( v_k \right) \).
+	\end{itemize}
+
+	Unser Ziel ist nun zu zeigen, dass ein solcher Weg mit Eigenschaft \( Q \) nicht existieren kann: Dazu nehmen wir an, das \( \pi \) so gewählt ist, dass es keinen Pfad mit größerem \( \sigma^{-1} \left( v_k \right) \) gibt, der \( Q \) erfüllt.
+
+	Da \( \pi \) keine Zwischenverbindung besitzt, sind zwar \( v_0 \) und \( v_1 \) benachbart, aber \( v_0 \) und \( v_k \) nicht. Da durch \( Q \) die Ungleichung \( \sigma^{-1} \left( v_1 \right) < \sigma^{-1} \left( v_k \right) < \sigma^{-1} \left( v_0 \right) \) gilt, existiert nach \( P \) ein Knoten \( x \) mit \( \sigma^{-1} \left( v_k \right) < \sigma^{-1} \left( x \right) \), der zu \( v_k \), aber nicht zu \( v_1 \), benachbart ist.
+
+	Sei \( j > 0 \) minimal mit \( v_j \in \textnormal{Adj} \left( x \right) \). \( x \) ist nicht zu \( v_0 \) benachbart, da sonst \( \left( x, v_0, v_1, \ldots, v_j, x \right) \) ein Kreis ohne Sehne wäre, was der Chordalität von \( G \) widersprechen würde. Falls nun \( \sigma^{-1} \left( v_0 \right) > \sigma^{-1} \left( x \right) \) gelten würde, besäße \( \left( v_0, v_1, \ldots, v_j, x\right) \) die Eigenschaft \( Q \); im anderen Fall \( \sigma^{-1} \left( v_0 \right) < \sigma^{-1} \left( x \right) \) wäre es \( \left( x, v_{j}, v_{j-1}, \ldots, v_0 \right) \).
+
+	Dies steht im Widerspruch dazu, dass \( \sigma^{-1} \left( v_k \right) \) maximal gewählt ist, womit kein Pfad die Eigenschaft \( Q \) besitzen kann.
+
+	Betrachte nun mit \( i \in \left\lbrace 1, \dots, \left| V \right| \right\rbrace \) beliebig den Knoten \( \sigma \left( i \right) \). Um zu beweisen, dass \( \sigma \) eine perfekte Eliminations-Reihenfolge ist, muss hier somit gezeigt werden, dass \( \sigma \left( i \right) \) in dem Teilgraphen \( G \left[ \left\lbrace \sigma \left( i \right), \ldots, \sigma \left( \left| V \right| \right) \right\rbrace \right] \) simplizial ist:
+
+	Seien also \( v, w \in \textnormal{Adj} \left( \sigma \left( i \right) \right), v \neq w \) mit \( i < \sigma^{-1} \left( v \right) \) und \( i < \sigma^{-1} \left( w \right) \) . \( v \) und \( w \) sind somit benachbart, da sonst entweder die Wege \( \left( v, \sigma \left( i \right), w \right) \) oder \( \left( w, \sigma \left( i \right), v \right) \) die Eigenschaft \( Q \) erfüllen würden.
+\end{proof}
+
+\begin{corollary}
+	Ein Graph \( G = \left( V, E \right) \) ist genau dann chordal, wenn die von der Kardinalitätssuche auf \( G \) generierte Ordnung \( \sigma \) eine perfekte Eliminations-Reihenfolge ist.
+\end{corollary}
+
+\begin{proof}
+	\begin{itemize}
+		\item[\( \Rightarrow \)]
+		      Für eine von der Kardinalitätssuche auf einem chordalen Graphen \( G \) generierte Reihenfolge \( \sigma \) wurde in Satz \ref{theorem:mcserfuelltp} gezeigt, dass diese \( P \) erfüllt. Daraus folgt nach Satz \ref{theorem:auspfolgtchordal}, dass es sich bei \( \sigma \) um eine perfekte Eliminations-Reihenfolge handelt.
+		\item[\( \Leftarrow \)]
+		      Wenn ein von der Kardinalitätssuche auf \( G \) generiertes \( \sigma \) eine perfekte Eliminationsreihenfolge ist, folgt mithilfe der Äquivalenz aus Satz \ref{theorem:chordalpeo}, dass \( G \) chordal ist.
+	\end{itemize}
+\end{proof}
+
+Um einen Graphen \( G \) auf Chordalität zu überprüfen, können wir somit zuerst mithilfe der Kardinalitätssuche die Reihenfolge \( \sigma \) berechnen, und müssen anschließend noch überprüfen, ob es sich bei \( \sigma \) um eine perfekte Eliminations-Reihenfolge handelt. Genauer beschrieben wird dieser letzte Schritt beispielsweise in \cite[Algorithmus 4.2]{golumbic}, der mit \( \mathcal{O} \left( \left| V \right| + \left| E \right| \right) \) Zeit auskommt.

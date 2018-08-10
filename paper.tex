@@ -1,0 +1,105 @@
+\documentclass[12pt,a4paper,bibliography=totocnumbered,listof=totocnumbered]{scrartcl}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage[right]{eurosym}
+\usepackage{subfig}
+\usepackage{floatflt}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{colortbl}
+\usepackage{paralist}
+\usepackage{array}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage[right]{eurosym}
+\usepackage[subfigure,titles]{tocloft}
+\usepackage[pdfpagelabels=true]{hyperref}
+\usepackage{amsthm}
+\usepackage{listings}
+\usepackage{mdframed}
+\usepackage{pdfpages}
+\usepackage{breqn}
+\usepackage[german]{algorithm2e}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{pgfplotstable}
+\usepackage{lineno}
+
+\nonstopmode
+
+%FIXME: Ist das besser?
+\newtheoremstyle{hagerup}%
+  {3pt}%
+  {3pt}%
+  {\itshape}%
+  {}%
+  {}%
+  {:}%
+  {.5em}%
+  {\textbf{\thmname{#1}\thmnumber{ #2}}\thmnote{ -- #3}}
+
+\newtheorem{claim}{Behauptung}
+\newtheorem{theorem}{Satz}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Korollar}
+
+\theoremstyle{hagerup}
+\newtheorem{definition}{Definition}
+
+\geometry{a4paper, top=27mm, left=30mm, right=20mm, bottom=35mm, headsep=10mm, footskip=12mm}
+
+\input{img/gausssteps/index.tex}
+
+\hypersetup{unicode=false, pdftoolbar=true, pdfmenubar=true, pdffitwindow=false, pdfstartview={FitH},
+	pdftitle={Platzeffiziente Erkennung von chordalen Graphen},
+	pdfauthor={Konstantin Fickel},
+	pdfsubject={Seminararbeit Algorithmen und Datenstrukturen},
+	pdfcreator={\LaTeX},
+	pdfproducer={pdfTeX \the\pdftexversion.\pdftexrevision},
+	pdfkeywords={Seminararbeit},
+	pdfnewwindow=true,
+	colorlinks=true,linkcolor=black,citecolor=black,filecolor=magenta,urlcolor=black}
+\pdfinfo{/CreationDate (D:20180718000000)}
+
+
+\title{Platzeffiziente Erkennung von chordalen Graphen}
+\providecommand{\subtitle}[1]{}
+\subtitle{Seminar \glqq{}Algorithmen und Datenstrukturen\grqq{}}
+\author{Konstantin Fickel}
+\date{Sommersemester 2018\\Universität Augsburg}
+
+\begin{document}
+
+\maketitle{}
+
+\begin{abstract}
+	\input{tex/01_abstract.tex}
+\end{abstract}
+
+\onehalfspacing
+
+\begingroup
+% \linenumbers
+% \modulolinenumbers[5]
+
+\input{tex/02_chordal.tex}
+\input{tex/03_perfekteeliminierungsreihenfolge.tex}
+\input{tex/04_kardinalitaetssuche.tex}
+\input{tex/05_platzeffizient.tex}
+\input{tex/06_anwendung.tex}
+\input{tex/07_fazit.tex}
+
+\endgroup
+
+\renewcommand\refname{Literaturverzeichnis}
+\bibliographystyle{bibliography/alphadin}
+\bibliography{bibliography/sources}
+
+\end{document}

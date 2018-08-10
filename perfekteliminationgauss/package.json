@@ -1,0 +1,20 @@
+{
+  "name": "Matrix-Eliminator",
+  "version": "1.0.0",
+  "description": "Using perfect elimination orders to do a perfect gaussian elimination",
+  "license": "MIT",
+  "scripts": {
+    "graph:gauss": "script-file",
+    "graph:createDat": "script-file",
+    "graph:countPEOs": "script-file"
+  },
+  "dependencies": {
+    "@types/fs-extra": "^5.0.2",
+    "@types/lodash": "^4.14.109",
+    "fs-extra": "^6.0.1",
+    "lodash": "^4.17.10",
+    "prettier": "^1.12.1",
+    "script-file": "^0.8.0",
+    "typescript": "^2.8.3"
+  }
+}

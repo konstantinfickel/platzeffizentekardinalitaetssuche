@@ -1,0 +1,57 @@
+\pgfplotstableread{img/gausssteps/default_0.dat}\matrixdefaulta
+\pgfplotstableread{img/gausssteps/default_1.dat}\matrixdefaultb
+\pgfplotstableread{img/gausssteps/default_2.dat}\matrixdefaultc
+\pgfplotstableread{img/gausssteps/default_3.dat}\matrixdefaultd
+\pgfplotstableread{img/gausssteps/default_4.dat}\matrixdefaulte
+\pgfplotstableread{img/gausssteps/default_5.dat}\matrixdefaultf
+\pgfplotstableread{img/gausssteps/default_6.dat}\matrixdefaultg
+\pgfplotstableread{img/gausssteps/default_7.dat}\matrixdefaulth
+
+\pgfplotstableread{img/gausssteps/optimized_0.dat}\matrixpeoa
+\pgfplotstableread{img/gausssteps/optimized_1.dat}\matrixpeob
+\pgfplotstableread{img/gausssteps/optimized_2.dat}\matrixpeoc
+\pgfplotstableread{img/gausssteps/optimized_3.dat}\matrixpeod
+\pgfplotstableread{img/gausssteps/optimized_4.dat}\matrixpeoe
+\pgfplotstableread{img/gausssteps/optimized_5.dat}\matrixpeof
+\pgfplotstableread{img/gausssteps/optimized_6.dat}\matrixpeog
+\pgfplotstableread{img/gausssteps/optimized_7.dat}\matrixpeoh
+
+\definecolor{light-gray}{gray}{0.90}
+
+\newcommand{\spymatrix}[1]{\resizebox{\columnwidth / 4}{!}{
+		\begin{tikzpicture}
+			\foreach \i in {0,...,7}{
+					\foreach \j in {0,...,7}{
+							\pgfplotstablegetelem{\i}{\j}\of#1
+							\ifnum\pgfplotsretval=0
+								\node[circle, minimum size=.5pt, inner sep=0pt, fill=light-gray] at (\j pt,-\i pt) {};
+							\else
+								\ifnum\pgfplotsretval=1
+									\node[circle, minimum size=.5pt, inner sep=0pt, fill=red] at (\j pt,-\i pt) {};
+								\else
+									\node[circle, minimum size=.5pt, inner sep=0pt, fill=black] at (\j pt,-\i pt) {};
+								\fi
+							\fi
+						};
+				};
+		\end{tikzpicture}
+	}}
+
+\newcommand{\spymatrixpresentation}[1]{\resizebox{\columnwidth}{!}{
+		\begin{tikzpicture}
+			\foreach \i in {0,...,7}{
+					\foreach \j in {0,...,7}{
+							\pgfplotstablegetelem{\i}{\j}\of#1
+							\ifnum\pgfplotsretval=0
+								\node[circle, minimum size=.5pt, inner sep=0pt, fill=light-gray] at (\j pt,-\i pt) {};
+							\else
+								\ifnum\pgfplotsretval=1
+									\node[circle, minimum size=.5pt, inner sep=0pt, fill=red] at (\j pt,-\i pt) {};
+								\else
+									\node[circle, minimum size=.5pt, inner sep=0pt, fill=black] at (\j pt,-\i pt) {};
+								\fi
+							\fi
+						};
+				};
+		\end{tikzpicture}
+	}}
