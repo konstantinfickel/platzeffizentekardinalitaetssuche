@@ -1,6 +1,6 @@
 # Platzeffiziente Erkennung von chordalen Graphen
 
-Seminararbeit bei Professer Torben Hagerup über platzeffiziente Algorithmen für die Maximum Cardinality Search und deren Anwendungen.
+Seminararbeit bei Professor Torben Hagerup über platzeffiziente Algorithmen für die Maximum Cardinality Search und deren Anwendungen.
 
 ## Kompilieren
 
